@@ -1,9 +1,48 @@
 class TasksController < ApplicationController
-  get    "tasks",          to: "tasks#index",   as: :tasks
-  get    "tasks/new",      to: "tasks#new",     as: :new_task   # must come before tasks/:id
-  post   "tasks",          to: "tasks#create"
-  get    "tasks/:id",      to: "tasks#show",    as: :task
-  get    "tasks/:id/edit", to: "tasks#edit",    as: :edit_task
-  patch  "tasks/:id",      to: "tasks#update"
-  delete "tasks/:id",      to: "tasks#destroy"
+  before_action :set_task, only: %i[show edit update destroy]
+
+  def index
+    @tasks = Task.all
+  end
+
+  def show
+  end
+
+  def new
+    @task = Task.new
+  end
+
+  def create
+    @task = Task.new(task_params)
+    if @task.save
+      redirect_to task_path(@task)
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit; end
+
+  def update
+    if @task.update(task_params)
+      redirect_to task_path(@task)
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @task.destroy
+    redirect_to tasks_path, status: :see_other
+  end
+
+  private
+
+  def set_task
+    @task = Task.find(params[:id])
+  end
+
+  def task_params
+    params.require(:task).permit(:title, :details, :completed)
+  end
 end
